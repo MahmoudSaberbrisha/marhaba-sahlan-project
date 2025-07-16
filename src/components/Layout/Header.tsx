@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bell, Search, Settings, User, Users, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,16 +12,60 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = () => {
     logout();
     toast({
       title: "تم تسجيل الخروج",
       description: "شكراً لاستخدام منصة التميز",
+    });
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      toast({
+        title: "البحث",
+        description: `البحث عن: ${searchQuery}`,
+      });
+      // يمكن إضافة منطق البحث هنا
+    }
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+    toast({
+      title: "الإعدادات",
+      description: "تم الانتقال إلى صفحة الإعدادات",
+    });
+  };
+
+  const handleProfileClick = () => {
+    toast({
+      title: "الملف الشخصي",
+      description: "سيتم تطوير صفحة الملف الشخصي قريباً",
+    });
+  };
+
+  const handleNotificationClick = (notification: string) => {
+    toast({
+      title: "إشعار",
+      description: `تم النقر على: ${notification}`,
+    });
+  };
+
+  const handleProfileSettings = () => {
+    navigate('/settings');
+    toast({
+      title: "إعدادات الملف الشخصي",
+      description: "تم الانتقال إلى الإعدادات",
     });
   };
 
@@ -45,13 +89,15 @@ const Header = () => {
 
         {/* Search */}
         <div className="flex-1 max-w-md mx-8">
-          <div className="relative">
+          <form onSubmit={handleSearch} className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               placeholder="البحث في المعايير والأدلة..."
               className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
+          </form>
         </div>
 
         {/* Actions */}
@@ -70,13 +116,13 @@ const Header = () => {
               <div className="p-3 border-b">
                 <h3 className="font-semibold">الإشعارات</h3>
               </div>
-              <DropdownMenuItem className="p-3">
+              <DropdownMenuItem className="p-3" onClick={() => handleNotificationClick('مهمة عاجلة - رفع دليل قبل 15 ديسمبر')}>
                 <div className="flex flex-col space-y-1">
                   <span className="text-sm font-medium">مهمة عاجلة</span>
                   <span className="text-xs text-gray-500">رفع دليل قبل 15 ديسمبر</span>
                 </div>
               </DropdownMenuItem>
-              <DropdownMenuItem className="p-3">
+              <DropdownMenuItem className="p-3" onClick={() => handleNotificationClick('تحديث الجائزة - انتقال للمرحلة الثانية')}>
                 <div className="flex flex-col space-y-1">
                   <span className="text-sm font-medium">تحديث الجائزة</span>
                   <span className="text-xs text-gray-500">انتقال للمرحلة الثانية</span>
@@ -86,7 +132,7 @@ const Header = () => {
           </DropdownMenu>
 
           {/* Settings */}
-          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
+          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80" onClick={handleSettingsClick}>
             <Settings className="h-5 w-5" />
           </Button>
 
@@ -107,8 +153,8 @@ const Header = () => {
                 </div>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>الملف الشخصي</DropdownMenuItem>
-              <DropdownMenuItem>الإعدادات</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfileClick}>الملف الشخصي</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfileSettings}>الإعدادات</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="h-4 w-4 mr-2" />
