@@ -15,9 +15,10 @@ interface Task {
 
 interface TasksListProps {
   tasks: Task[];
+  onTaskClick?: (taskId: string) => void;
 }
 
-const TasksList: React.FC<TasksListProps> = ({ tasks }) => {
+const TasksList: React.FC<TasksListProps> = ({ tasks, onTaskClick }) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -66,7 +67,11 @@ const TasksList: React.FC<TasksListProps> = ({ tasks }) => {
                   </div>
                 </div>
               </div>
-              <Button size="sm" variant="outline">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => onTaskClick?.(task.id)}
+              >
                 عرض
               </Button>
             </div>

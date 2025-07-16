@@ -10,9 +10,10 @@ interface CriterionProgress {
 
 interface ProgressChartProps {
   data: CriterionProgress[];
+  onItemClick?: (criterionName: string) => void;
 }
 
-const ProgressChart: React.FC<ProgressChartProps> = ({ data }) => {
+const ProgressChart: React.FC<ProgressChartProps> = ({ data, onItemClick }) => {
   return (
     <Card>
       <CardHeader>
@@ -21,7 +22,15 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ data }) => {
       <CardContent>
         <div className="space-y-4">
           {data.map((item, index) => (
-            <div key={index} className="space-y-2">
+            <div 
+              key={index} 
+              className={`space-y-2 p-2 rounded-lg transition-all duration-200 ${
+                onItemClick 
+                  ? 'cursor-pointer hover:bg-muted/50 hover:shadow-sm' 
+                  : ''
+              }`}
+              onClick={() => onItemClick?.(item.name)}
+            >
               <div className="flex justify-between text-sm">
                 <span className="font-medium">{item.name}</span>
                 <span className="text-muted-foreground">{item.progress}%</span>

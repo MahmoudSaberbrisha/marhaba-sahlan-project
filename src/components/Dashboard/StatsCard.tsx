@@ -11,6 +11,7 @@ interface StatsCardProps {
   trendValue?: string;
   icon?: React.ReactNode;
   color?: 'blue' | 'green' | 'orange' | 'red';
+  onClick?: () => void;
 }
 
 const StatsCard: React.FC<StatsCardProps> = ({
@@ -21,6 +22,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
   trendValue,
   icon,
   color = 'blue',
+  onClick,
 }) => {
   const colorClasses = {
     blue: 'bg-primary/10 text-primary',
@@ -30,7 +32,13 @@ const StatsCard: React.FC<StatsCardProps> = ({
   };
 
   return (
-    <Card>
+    <Card 
+      className={cn(
+        'transition-all duration-200',
+        onClick && 'cursor-pointer hover:shadow-md hover:scale-105'
+      )}
+      onClick={onClick}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {icon && (
