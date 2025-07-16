@@ -8,6 +8,10 @@ import Criteria from "./pages/Criteria";
 import Evidence from "./pages/Evidence";
 import Evaluations from "./pages/Evaluations";
 import Awards from "./pages/Awards";
+import Tasks from "./pages/Tasks";
+import Teams from "./pages/Teams";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +28,10 @@ const App = () => (
           <Route path="/evidence" element={<Evidence />} />
           <Route path="/evaluations" element={<Evaluations />} />
           <Route path="/awards" element={<Awards />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/teams" element={<Teams />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
