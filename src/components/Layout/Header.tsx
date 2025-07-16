@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Search, Settings, User } from 'lucide-react';
+import { Bell, Search, Settings, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -12,12 +12,20 @@ import {
 
 const Header = () => {
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-primary border-b border-primary px-6 py-4">
       <div className="flex items-center justify-between">
         {/* Logo and Title */}
         <div className="flex items-center space-x-4">
-          <div className="text-2xl font-bold text-primary">
-            منصة التميز للعمل الخيري
+          <div className="bg-secondary rounded-lg p-2 flex items-center justify-center">
+            <Users className="h-6 w-6 text-secondary-foreground" />
+          </div>
+          <div className="text-right">
+            <div className="text-xl font-bold text-primary-foreground">
+              منصة التميز للعمل الخيري
+            </div>
+            <div className="text-sm text-primary-foreground/80">
+              جمعية أبناء
+            </div>
           </div>
         </div>
 
@@ -37,9 +45,9 @@ const Header = () => {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-primary/80">
                 <Bell className="h-5 w-5" />
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-secondary text-secondary-foreground">
                   3
                 </Badge>
               </Button>
@@ -64,14 +72,14 @@ const Header = () => {
           </DropdownMenu>
 
           {/* Settings */}
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
             <Settings className="h-5 w-5" />
           </Button>
 
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2">
+              <Button variant="ghost" className="flex items-center space-x-2 text-primary-foreground hover:bg-primary/80">
                 <User className="h-5 w-5" />
                 <span>أحمد محمد</span>
               </Button>
