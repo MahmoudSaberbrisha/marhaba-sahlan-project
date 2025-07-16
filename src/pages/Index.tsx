@@ -124,9 +124,9 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 border rounded-lg bg-red-50">
+                <div className="flex items-center justify-between p-3 border rounded-lg bg-destructive/10">
                   <div className="flex items-center space-x-3">
-                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
                     <div>
                       <h4 className="font-medium">فجوة في الموارد البشرية</h4>
                       <p className="text-sm text-muted-foreground">
@@ -134,12 +134,12 @@ const Index = () => {
                       </p>
                     </div>
                   </div>
-                  <span className="text-red-500 font-medium">28%</span>
+                  <span className="text-destructive font-medium">28%</span>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 border rounded-lg bg-orange-50">
+                <div className="flex items-center justify-between p-3 border rounded-lg bg-accent/10">
                   <div className="flex items-center space-x-3">
-                    <TrendingUp className="h-5 w-5 text-orange-500" />
+                    <TrendingUp className="h-5 w-5 text-accent" />
                     <div>
                       <h4 className="font-medium">فرصة تحسين</h4>
                       <p className="text-sm text-muted-foreground">
@@ -147,7 +147,7 @@ const Index = () => {
                       </p>
                     </div>
                   </div>
-                  <span className="text-orange-500 font-medium">32%</span>
+                  <span className="text-accent font-medium">32%</span>
                 </div>
               </div>
             </CardContent>
@@ -166,19 +166,19 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <button className="w-full flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <button className="w-full flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-muted">
                   <Target className="h-4 w-4" />
                   <span>إضافة معيار جديد</span>
                 </button>
-                <button className="w-full flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <button className="w-full flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-muted">
                   <FileText className="h-4 w-4" />
                   <span>رفع دليل</span>
                 </button>
-                <button className="w-full flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <button className="w-full flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-muted">
                   <BarChart3 className="h-4 w-4" />
                   <span>بدء تقييم</span>
                 </button>
-                <button className="w-full flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <button className="w-full flex items-center justify-center space-x-2 p-3 border rounded-lg hover:bg-muted">
                   <Users className="h-4 w-4" />
                   <span>إدارة الفرق</span>
                 </button>

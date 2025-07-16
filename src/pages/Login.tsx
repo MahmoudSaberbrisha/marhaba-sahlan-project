@@ -55,6 +55,13 @@ const Login = () => {
           <p className="text-muted-foreground">
             جمعية أبناء
           </p>
+          <div className="mt-4 p-3 bg-muted rounded-lg">
+            <p className="text-sm text-muted-foreground text-center">
+              بيانات تسجيل الدخول المؤقتة:<br />
+              <strong>البريد:</strong> admin@abna.org<br />
+              <strong>كلمة المرور:</strong> admin123
+            </p>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
