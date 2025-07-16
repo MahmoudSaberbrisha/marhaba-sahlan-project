@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Upload, 
   Search, 
@@ -14,152 +16,220 @@ import {
   Check,
   X,
   Clock,
-  Link,
+  Link as LinkIcon,
   Image,
   Video,
-  File
+  File,
+  Plus
 } from 'lucide-react';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { apiService } from '../services/api';
+
+interface Evidence {
+  id: number;
+  name: string;
+  description: string;
+  type: string;
+  filePath?: string;
+  fileUrl?: string;
+  status: string;
+  uploadDate: string;
+  uploadedBy: number;
+  indicatorId: number;
+  reviewNotes?: string;
+  User?: {
+    name: string;
+  };
+  Indicator?: {
+    name: string;
+  };
+}
 
 const Evidence = () => {
+  const [evidences, setEvidences] = useState<Evidence[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
 
-  // Sample data - in real app, this would come from API
-  const evidenceList = [
-    {
-      id: 1,
-      name: 'سياسة الموارد البشرية 2024',
-      description: 'الوثيقة الرسمية لسياسة الموارد البشرية',
-      type: 'document',
-      criterion: 'الموارد البشرية',
-      indicator: 'وجود سياسات مكتوبة',
-      status: 'approved',
-      uploadDate: '2024-12-01',
-      uploader: 'أحمد محمد',
-      size: '2.5 MB',
-      reviewNotes: 'تم الاعتماد بنجاح',
-    },
-    {
-      id: 2,
-      name: 'تقرير الحوكمة السنوي',
-      description: 'تقرير شامل عن ممارسات الحوكمة',
-      type: 'document',
-      criterion: 'الحوكمة والشفافية',
-      indicator: 'التقارير الدورية',
-      status: 'pending',
-      uploadDate: '2024-12-10',
-      uploader: 'فاطمة أحمد',
-      size: '5.8 MB',
-      reviewNotes: 'قيد المراجعة',
-    },
-    {
-      id: 3,
-      name: 'رابط نظام إدارة المستفيدين',
-      description: 'رابط للنظام الإلكتروني لإدارة المستفيدين',
-      type: 'link',
-      criterion: 'العمليات والخدمات',
-      indicator: 'الأنظمة الإلكترونية',
-      status: 'approved',
-      uploadDate: '2024-11-28',
-      uploader: 'محمد علي',
-      size: '-',
-      reviewNotes: 'الرابط يعمل بشكل صحيح',
-    },
-    {
-      id: 4,
-      name: 'صور ورشة القيادة',
-      description: 'مجموعة صور من ورشة تدريب القيادة',
-      type: 'image',
-      criterion: 'القيادة والإدارة',
-      indicator: 'البرامج التدريبية',
-      status: 'rejected',
-      uploadDate: '2024-12-05',
-      uploader: 'سارة محمد',
-      size: '12.3 MB',
-      reviewNotes: 'الصور غير واضحة، يرجى إعادة الرفع',
-    },
-    {
-      id: 5,
-      name: 'فيديو تعريفي بالجمعية',
-      description: 'فيديو تعريفي رسمي بأنشطة الجمعية',
-      type: 'video',
-      criterion: 'التواصل والإعلام',
-      indicator: 'المواد الإعلامية',
-      status: 'approved',
-      uploadDate: '2024-11-30',
-      uploader: 'عبدالله أحمد',
-      size: '45.2 MB',
-      reviewNotes: 'فيديو ممتاز ومفيد',
-    },
-  ];
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    type: 'document',
+    fileUrl: '',
+    indicatorId: ''
+  });
+
+  useEffect(() => {
+    fetchEvidences();
+  }, [selectedTab]);
+
+  const fetchEvidences = async () => {
+    try {
+      setLoading(true);
+      const params = selectedTab !== 'all' ? { status: selectedTab } : {};
+      const data = await apiService.getEvidence(params);
+      setEvidences(data);
+    } catch (error: any) {
+      toast({
+        title: "خطأ في تحميل الأدلة",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile && !formData.fileUrl) {
+      toast({
+        title: "خطأ",
+        description: "يرجى اختيار ملف أو إدخال رابط",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const uploadData = new FormData();
+      uploadData.append('name', formData.name);
+      uploadData.append('description', formData.description);
+      uploadData.append('type', formData.type);
+      uploadData.append('indicatorId', formData.indicatorId);
+      
+      if (selectedFile) {
+        uploadData.append('file', selectedFile);
+      }
+      
+      if (formData.fileUrl) {
+        uploadData.append('fileUrl', formData.fileUrl);
+      }
+
+      await apiService.uploadEvidence(uploadData);
+      
+      toast({
+        title: "تم رفع الدليل بنجاح",
+        description: "تم رفع الدليل وإرساله للمراجعة",
+      });
+
+      setIsDialogOpen(false);
+      setFormData({
+        name: '',
+        description: '',
+        type: 'document',
+        fileUrl: '',
+        indicatorId: ''
+      });
+      setSelectedFile(null);
+      fetchEvidences();
+    } catch (error: any) {
+      toast({
+        title: "خطأ في رفع الدليل",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleReview = async (id: number, status: string) => {
+    try {
+      await apiService.reviewEvidence(id, status, '');
+      toast({
+        title: "تم تحديث حالة الدليل",
+        description: `تم ${status === 'approved' ? 'اعتماد' : 'رفض'} الدليل`,
+      });
+      fetchEvidences();
+    } catch (error: any) {
+      toast({
+        title: "خطأ في المراجعة",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <Check className="h-4 w-4" />;
-      case 'pending':
-        return <Clock className="h-4 w-4" />;
-      case 'rejected':
-        return <X className="h-4 w-4" />;
-      default:
-        return <Clock className="h-4 w-4" />;
+      case 'approved': return <Check className="h-4 w-4" />;
+      case 'pending': return <Clock className="h-4 w-4" />;
+      case 'rejected': return <X className="h-4 w-4" />;
+      default: return <Clock className="h-4 w-4" />;
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'document':
-        return <FileText className="h-5 w-5 text-blue-600" />;
-      case 'link':
-        return <Link className="h-5 w-5 text-green-600" />;
-      case 'image':
-        return <Image className="h-5 w-5 text-purple-600" />;
-      case 'video':
-        return <Video className="h-5 w-5 text-red-600" />;
-      default:
-        return <File className="h-5 w-5 text-gray-600" />;
+      case 'document': return <FileText className="h-5 w-5 text-blue-600" />;
+      case 'link': return <LinkIcon className="h-5 w-5 text-green-600" />;
+      case 'image': return <Image className="h-5 w-5 text-purple-600" />;
+      case 'video': return <Video className="h-5 w-5 text-red-600" />;
+      default: return <File className="h-5 w-5 text-gray-600" />;
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'approved':
-        return 'معتمد';
-      case 'pending':
-        return 'قيد المراجعة';
-      case 'rejected':
-        return 'مرفوض';
-      default:
-        return 'غير محدد';
+      case 'approved': return 'معتمد';
+      case 'pending': return 'قيد المراجعة';
+      case 'rejected': return 'مرفوض';
+      default: return 'غير محدد';
     }
   };
 
   const tabs = [
-    { id: 'all', label: 'الكل', count: evidenceList.length },
-    { id: 'approved', label: 'معتمد', count: evidenceList.filter(e => e.status === 'approved').length },
-    { id: 'pending', label: 'قيد المراجعة', count: evidenceList.filter(e => e.status === 'pending').length },
-    { id: 'rejected', label: 'مرفوض', count: evidenceList.filter(e => e.status === 'rejected').length },
+    { id: 'all', label: 'الكل', count: evidences.length },
+    { id: 'approved', label: 'معتمد', count: evidences.filter(e => e.status === 'approved').length },
+    { id: 'pending', label: 'قيد المراجعة', count: evidences.filter(e => e.status === 'pending').length },
+    { id: 'rejected', label: 'مرفوض', count: evidences.filter(e => e.status === 'rejected').length },
   ];
 
-  const filteredEvidence = evidenceList.filter(evidence => {
+  const filteredEvidence = evidences.filter(evidence => {
     const matchesSearch = evidence.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         evidence.criterion.toLowerCase().includes(searchTerm.toLowerCase());
+                         evidence.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTab = selectedTab === 'all' || evidence.status === selectedTab;
     return matchesSearch && matchesTab;
   });
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -172,10 +242,98 @@ const Evidence = () => {
               إدارة ومراجعة الأدلة الداعمة للمعايير والمؤشرات
             </p>
           </div>
-          <Button className="flex items-center space-x-2">
-            <Upload className="h-4 w-4" />
-            <span>رفع دليل جديد</span>
-          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>رفع دليل جديد</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>رفع دليل جديد</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleFileUpload} className="space-y-4">
+                <div>
+                  <Label htmlFor="name">اسم الدليل</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="description">الوصف</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="type">نوع الدليل</Label>
+                  <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="document">مستند</SelectItem>
+                      <SelectItem value="link">رابط</SelectItem>
+                      <SelectItem value="image">صورة</SelectItem>
+                      <SelectItem value="video">فيديو</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.type === 'document' && (
+                  <div>
+                    <Label htmlFor="file">اختر الملف</Label>
+                    <Input
+                      id="file"
+                      type="file"
+                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    />
+                  </div>
+                )}
+
+                {formData.type === 'link' && (
+                  <div>
+                    <Label htmlFor="fileUrl">الرابط</Label>
+                    <Input
+                      id="fileUrl"
+                      type="url"
+                      value={formData.fileUrl}
+                      onChange={(e) => setFormData({...formData, fileUrl: e.target.value})}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <Label htmlFor="indicatorId">رقم المؤشر</Label>
+                  <Input
+                    id="indicatorId"
+                    type="number"
+                    value={formData.indicatorId}
+                    onChange={(e) => setFormData({...formData, indicatorId: e.target.value})}
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    إلغاء
+                  </Button>
+                  <Button type="submit" disabled={uploading}>
+                    {uploading ? 'جاري الرفع...' : 'رفع الدليل'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Search and Filter */}
@@ -239,23 +397,19 @@ const Evidence = () => {
                       <p className="text-sm text-gray-600 mb-2">{evidence.description}</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-500">
                         <div>
-                          <span className="font-medium">المعيار:</span> {evidence.criterion}
+                          <span className="font-medium">المؤشر:</span> {evidence.Indicator?.name || `مؤشر ${evidence.indicatorId}`}
                         </div>
                         <div>
-                          <span className="font-medium">المؤشر:</span> {evidence.indicator}
+                          <span className="font-medium">تاريخ الرفع:</span> {new Date(evidence.uploadDate).toLocaleDateString('ar-SA')}
                         </div>
                         <div>
-                          <span className="font-medium">تاريخ الرفع:</span> {evidence.uploadDate}
+                          <span className="font-medium">رفع بواسطة:</span> {evidence.User?.name || 'غير محدد'}
                         </div>
-                        <div>
-                          <span className="font-medium">رفع بواسطة:</span> {evidence.uploader}
-                        </div>
-                        <div>
-                          <span className="font-medium">الحجم:</span> {evidence.size}
-                        </div>
-                        <div>
-                          <span className="font-medium">ملاحظات المراجعة:</span> {evidence.reviewNotes}
-                        </div>
+                        {evidence.reviewNotes && (
+                          <div className="col-span-2">
+                            <span className="font-medium">ملاحظات المراجعة:</span> {evidence.reviewNotes}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -271,10 +425,19 @@ const Evidence = () => {
                     </Button>
                     {evidence.status === 'pending' && (
                       <>
-                        <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => handleReview(evidence.id, 'approved')}
+                        >
                           <Check className="h-4 w-4" />
                         </Button>
-                        <Button variant="destructive" size="sm">
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => handleReview(evidence.id, 'rejected')}
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       </>
