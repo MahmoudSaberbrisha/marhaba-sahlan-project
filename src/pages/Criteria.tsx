@@ -32,6 +32,9 @@ const Criteria = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingCriterion, setEditingCriterion] = useState(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [selectedCriterion, setSelectedCriterion] = useState(null);
   const [newCriterion, setNewCriterion] = useState({
     name: '',
     code: '',
@@ -154,6 +157,39 @@ const Criteria = () => {
 
   const handleEditCriterion = (criterion) => {
     setEditingCriterion(criterion);
+    setNewCriterion({
+      name: criterion.name,
+      code: criterion.code,
+      weight: criterion.weight.toString(),
+      description: criterion.description,
+      status: criterion.status
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!newCriterion.name || !newCriterion.code || !newCriterion.weight) {
+      toast({
+        title: "خطأ",
+        description: "جميع الحقول المطلوبة يجب ملؤها",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toast({
+      title: "تم بنجاح",
+      description: `تم تحديث المعيار "${newCriterion.name}" بنجاح`
+    });
+    
+    setShowEditDialog(false);
+    setEditingCriterion(null);
+    setNewCriterion({ name: '', code: '', weight: '', description: '', status: 'active' });
+  };
+
+  const handleViewCriterion = (criterion) => {
+    setSelectedCriterion(criterion);
+    setShowViewDialog(true);
   };
 
   const handleDeleteCriterion = (criterion) => {
@@ -289,6 +325,146 @@ const Criteria = () => {
           </Dialog>
         </div>
 
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>تعديل المعيار</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-name">اسم المعيار *</Label>
+                <Input
+                  id="edit-name"
+                  value={newCriterion.name}
+                  onChange={(e) => setNewCriterion({...newCriterion, name: e.target.value})}
+                  placeholder="أدخل اسم المعيار"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-code">رمز المعيار *</Label>
+                <Input
+                  id="edit-code"
+                  value={newCriterion.code}
+                  onChange={(e) => setNewCriterion({...newCriterion, code: e.target.value})}
+                  placeholder="مثال: L1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-weight">الوزن النسبي (%) *</Label>
+                <Input
+                  id="edit-weight"
+                  type="number"
+                  value={newCriterion.weight}
+                  onChange={(e) => setNewCriterion({...newCriterion, weight: e.target.value})}
+                  placeholder="20"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-description">الوصف</Label>
+                <Textarea
+                  id="edit-description"
+                  value={newCriterion.description}
+                  onChange={(e) => setNewCriterion({...newCriterion, description: e.target.value})}
+                  placeholder="وصف المعيار"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-status">الحالة</Label>
+                <Select value={newCriterion.status} onValueChange={(val) => setNewCriterion({...newCriterion, status: val})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">نشط</SelectItem>
+                    <SelectItem value="inactive">غير نشط</SelectItem>
+                    <SelectItem value="draft">مسودة</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                  إلغاء
+                </Button>
+                <Button onClick={handleSaveEdit}>
+                  <Save className="h-4 w-4 mr-2" />
+                  حفظ التغييرات
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Dialog */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>تفاصيل المعيار</DialogTitle>
+            </DialogHeader>
+            {selectedCriterion && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">اسم المعيار</Label>
+                    <p className="text-lg font-semibold">{selectedCriterion.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">رمز المعيار</Label>
+                    <p className="text-lg font-semibold">{selectedCriterion.code}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الوزن النسبي</Label>
+                    <p className="text-lg font-semibold">{selectedCriterion.weight}%</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الحالة</Label>
+                    <Badge className={getStatusColor(selectedCriterion.status)}>
+                      {selectedCriterion.status === 'active' ? 'نشط' : 'غير نشط'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">الوصف</Label>
+                  <p className="text-base mt-1">{selectedCriterion.description}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{selectedCriterion.progress}%</div>
+                    <div className="text-sm text-gray-600">نسبة الإنجاز</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{selectedCriterion.subCriteria}</div>
+                    <div className="text-sm text-gray-600">معايير فرعية</div>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">{selectedCriterion.indicators}</div>
+                    <div className="text-sm text-gray-600">مؤشرات</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">{selectedCriterion.evidence}</div>
+                    <div className="text-sm text-gray-600">أدلة</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+                    إغلاق
+                  </Button>
+                  <Button onClick={() => {
+                    setShowViewDialog(false);
+                    handleEditCriterion(selectedCriterion);
+                  }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    تعديل
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Search and Filter */}
         <Card>
           <CardContent className="p-4">
@@ -378,10 +554,7 @@ const Criteria = () => {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => toast({
-                        title: "تفاصيل المعيار",
-                        description: `عرض تفاصيل المعيار "${criterion.name}"`
-                      })}
+                      onClick={() => handleViewCriterion(criterion)}
                       title="عرض التفاصيل"
                     >
                       <Eye className="h-4 w-4" />

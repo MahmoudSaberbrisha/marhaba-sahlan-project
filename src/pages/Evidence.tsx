@@ -67,6 +67,8 @@ const Evidence = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [selectedEvidence, setSelectedEvidence] = useState(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -171,10 +173,8 @@ const Evidence = () => {
   };
 
   const handlePreview = (evidence: Evidence) => {
-    toast({
-      title: "معاينة الدليل",
-      description: `عرض معاينة ${evidence.name}`,
-    });
+    setSelectedEvidence(evidence);
+    setShowViewDialog(true);
   };
 
   const handleDownload = (evidence: Evidence) => {
@@ -469,6 +469,78 @@ const Evidence = () => {
             </Card>
           ))}
         </div>
+
+        {/* View Dialog */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>تفاصيل الدليل</DialogTitle>
+            </DialogHeader>
+            {selectedEvidence && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">اسم الدليل</Label>
+                    <p className="text-lg font-semibold">{selectedEvidence.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">نوع الدليل</Label>
+                    <div className="flex items-center space-x-2">
+                      {getTypeIcon(selectedEvidence.type)}
+                      <span className="text-base">{selectedEvidence.type}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الحالة</Label>
+                    <Badge className={getStatusColor(selectedEvidence.status)}>
+                      <div className="flex items-center space-x-1">
+                        {getStatusIcon(selectedEvidence.status)}
+                        <span>{getStatusText(selectedEvidence.status)}</span>
+                      </div>
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">تاريخ الرفع</Label>
+                    <p className="text-base">{new Date(selectedEvidence.uploadDate).toLocaleDateString('ar-SA')}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">الوصف</Label>
+                  <p className="text-base mt-1">{selectedEvidence.description}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">المؤشر</Label>
+                    <p className="text-base">{selectedEvidence.Indicator?.name || `مؤشر ${selectedEvidence.indicatorId}`}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">رفع بواسطة</Label>
+                    <p className="text-base">{selectedEvidence.User?.name || 'غير محدد'}</p>
+                  </div>
+                </div>
+
+                {selectedEvidence.reviewNotes && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">ملاحظات المراجعة</Label>
+                    <p className="text-base mt-1 p-3 bg-gray-50 rounded-lg">{selectedEvidence.reviewNotes}</p>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+                    إغلاق
+                  </Button>
+                  <Button onClick={() => handleDownload(selectedEvidence)}>
+                    <Download className="h-4 w-4 mr-2" />
+                    تحميل
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

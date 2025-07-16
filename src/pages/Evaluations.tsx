@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { 
   BarChart3, 
@@ -23,6 +26,9 @@ import {
 const Evaluations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedEvaluation, setSelectedEvaluation] = useState(null);
   const { toast } = useToast();
 
   // Sample data - in real app, this would come from API
@@ -171,17 +177,13 @@ const Evaluations = () => {
   };
 
   const handleViewEvaluation = (evaluation: any) => {
-    toast({
-      title: "عرض التقييم",
-      description: `عرض تفاصيل تقييم ${evaluation.criterion}`,
-    });
+    setSelectedEvaluation(evaluation);
+    setShowViewDialog(true);
   };
 
   const handleEditEvaluation = (evaluation: any) => {
-    toast({
-      title: "تعديل التقييم",
-      description: `تعديل تقييم ${evaluation.criterion}`,
-    });
+    setSelectedEvaluation(evaluation);
+    setShowEditDialog(true);
   };
 
   const handleFilter = () => {
@@ -402,6 +404,142 @@ const Evaluations = () => {
             </Card>
           ))}
         </div>
+
+        {/* View Dialog */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>تفاصيل التقييم</DialogTitle>
+            </DialogHeader>
+            {selectedEvaluation && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">المعيار</Label>
+                    <p className="text-lg font-semibold">{selectedEvaluation.criterion}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">نوع التقييم</Label>
+                    <Badge variant="outline">
+                      {getEvaluationTypeText(selectedEvaluation.evaluationType)}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الحالة</Label>
+                    <Badge className={getStatusColor(selectedEvaluation.status)}>
+                      {getStatusText(selectedEvaluation.status)}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">المقيم</Label>
+                    <p className="text-base">{selectedEvaluation.evaluator}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{selectedEvaluation.percentage}%</div>
+                    <div className="text-sm text-gray-600">النسبة المحققة</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{selectedEvaluation.actualValue}</div>
+                    <div className="text-sm text-gray-600">القيمة الفعلية</div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-gray-600">{selectedEvaluation.targetValue}</div>
+                    <div className="text-sm text-gray-600">القيمة المستهدفة</div>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                    <div className="flex items-center justify-center space-x-2">
+                      {getTrendIcon(selectedEvaluation.trend)}
+                      <span className={`text-lg font-bold ${
+                        selectedEvaluation.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {selectedEvaluation.trendValue}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600">الاتجاه</div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">شريط التقدم</Label>
+                  <Progress value={selectedEvaluation.percentage} className="h-3 mt-2" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">آخر تحديث</Label>
+                    <p className="text-base">{selectedEvaluation.lastUpdated}</p>
+                  </div>
+                </div>
+
+                {selectedEvaluation.notes && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">ملاحظات</Label>
+                    <p className="text-base mt-1 p-3 bg-gray-50 rounded-lg">{selectedEvaluation.notes}</p>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+                    إغلاق
+                  </Button>
+                  <Button onClick={() => {
+                    setShowViewDialog(false);
+                    handleEditEvaluation(selectedEvaluation);
+                  }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    تعديل
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>تعديل التقييم</DialogTitle>
+            </DialogHeader>
+            {selectedEvaluation && (
+              <div className="space-y-4">
+                <div>
+                  <Label>المعيار</Label>
+                  <Input value={selectedEvaluation.criterion} disabled />
+                </div>
+                <div>
+                  <Label>القيمة الفعلية</Label>
+                  <Input type="number" defaultValue={selectedEvaluation.actualValue} />
+                </div>
+                <div>
+                  <Label>القيمة المستهدفة</Label>
+                  <Input type="number" defaultValue={selectedEvaluation.targetValue} />
+                </div>
+                <div>
+                  <Label>ملاحظات</Label>
+                  <Textarea defaultValue={selectedEvaluation.notes} />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                    إلغاء
+                  </Button>
+                  <Button onClick={() => {
+                    toast({
+                      title: "تم الحفظ",
+                      description: "تم تحديث التقييم بنجاح"
+                    });
+                    setShowEditDialog(false);
+                  }}>
+                    حفظ التغييرات
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

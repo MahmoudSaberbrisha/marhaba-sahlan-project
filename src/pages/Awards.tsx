@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Award, 
@@ -23,6 +26,9 @@ import {
 const Awards = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedAward, setSelectedAward] = useState(null);
   const { toast } = useToast();
 
   // Sample data - in real app, this would come from API
@@ -164,17 +170,13 @@ const Awards = () => {
   };
 
   const handleManageProgress = (award: any) => {
-    toast({
-      title: "إدارة التقدم",
-      description: `إدارة تقدم ${award.name}`,
-    });
+    setSelectedAward(award);
+    setShowEditDialog(true);
   };
 
   const handleViewDocuments = (award: any) => {
-    toast({
-      title: "الوثائق المطلوبة",
-      description: `عرض وثائق ${award.name}`,
-    });
+    setSelectedAward(award);
+    setShowViewDialog(true);
   };
 
   const handleSchedule = (award: any) => {
@@ -431,6 +433,139 @@ const Awards = () => {
             </Card>
           ))}
         </div>
+
+        {/* View Dialog */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>تفاصيل الجائزة</DialogTitle>
+            </DialogHeader>
+            {selectedAward && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">اسم الجائزة</Label>
+                    <p className="text-lg font-semibold">{selectedAward.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الفئة</Label>
+                    <Badge variant="outline">{selectedAward.category}</Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الحالة</Label>
+                    <Badge className={getStatusColor(selectedAward.status)}>
+                      <div className="flex items-center space-x-1">
+                        {getStatusIcon(selectedAward.status)}
+                        <span>{getStatusText(selectedAward.status)}</span>
+                      </div>
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الجهة المنظمة</Label>
+                    <p className="text-base">{selectedAward.organizer}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{selectedAward.progress}%</div>
+                    <div className="text-sm text-gray-600">التقدم</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{selectedAward.completedCriteria}</div>
+                    <div className="text-sm text-gray-600">معايير مكتملة</div>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">{selectedAward.requiredCriteria}</div>
+                    <div className="text-sm text-gray-600">معايير مطلوبة</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">{selectedAward.totalScore}</div>
+                    <div className="text-sm text-gray-600">النقاط</div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">المرحلة الحالية</Label>
+                  <p className="text-base mt-1">{selectedAward.currentPhase}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">موعد التقديم</Label>
+                    <p className="text-base">{selectedAward.applicationDeadline}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">إعلان النتائج</Label>
+                    <p className="text-base">{selectedAward.resultDate}</p>
+                  </div>
+                </div>
+
+                {selectedAward.notes && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">ملاحظات</Label>
+                    <p className="text-base mt-1 p-3 bg-gray-50 rounded-lg">{selectedAward.notes}</p>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+                    إغلاق
+                  </Button>
+                  <Button onClick={() => {
+                    setShowViewDialog(false);
+                    handleManageProgress(selectedAward);
+                  }}>
+                    إدارة التقدم
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>إدارة تقدم الجائزة</DialogTitle>
+            </DialogHeader>
+            {selectedAward && (
+              <div className="space-y-4">
+                <div>
+                  <Label>اسم الجائزة</Label>
+                  <Input value={selectedAward.name} disabled />
+                </div>
+                <div>
+                  <Label>المعايير المكتملة</Label>
+                  <Input type="number" defaultValue={selectedAward.completedCriteria} />
+                </div>
+                <div>
+                  <Label>النقاط الحالية</Label>
+                  <Input type="number" defaultValue={selectedAward.totalScore} />
+                </div>
+                <div>
+                  <Label>ملاحظات</Label>
+                  <Textarea defaultValue={selectedAward.notes} />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                    إلغاء
+                  </Button>
+                  <Button onClick={() => {
+                    toast({
+                      title: "تم الحفظ",
+                      description: "تم تحديث تقدم الجائزة بنجاح"
+                    });
+                    setShowEditDialog(false);
+                  }}>
+                    حفظ التغييرات
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

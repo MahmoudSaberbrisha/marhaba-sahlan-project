@@ -5,11 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, Clock, AlertCircle, CheckCircle, Plus, Search, Filter } from 'lucide-react';
 
 const Tasks = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
   const { toast } = useToast();
 
   const tasks = [
@@ -107,10 +114,13 @@ const Tasks = () => {
   };
 
   const handleEditTask = (task: any) => {
-    toast({
-      title: "تعديل المهمة",
-      description: `تعديل ${task.title}`,
-    });
+    setSelectedTask(task);
+    setShowEditDialog(true);
+  };
+
+  const handleViewTask = (task: any) => {
+    setSelectedTask(task);
+    setShowViewDialog(true);
   };
 
   const handleCompleteTask = (task: any) => {
@@ -216,6 +226,9 @@ const Tasks = () => {
                       </div>
                     </div>
                     <div className="flex justify-end gap-2 mt-4">
+                      <Button variant="outline" size="sm" onClick={() => handleViewTask(task)}>
+                        عرض
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => handleEditTask(task)}>
                         تعديل
                       </Button>
@@ -266,6 +279,134 @@ const Tasks = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* View Dialog */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>تفاصيل المهمة</DialogTitle>
+            </DialogHeader>
+            {selectedTask && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">عنوان المهمة</Label>
+                    <p className="text-lg font-semibold">{selectedTask.title}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الأولوية</Label>
+                    <Badge className={getPriorityColor(selectedTask.priority)}>
+                      {selectedTask.priority}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الحالة</Label>
+                    <Badge className={getStatusColor(selectedTask.status)}>
+                      {selectedTask.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">المكلف</Label>
+                    <p className="text-base">{selectedTask.assignedTo}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">الوصف</Label>
+                  <p className="text-base mt-1">{selectedTask.description}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">تاريخ الاستحقاق</Label>
+                    <p className="text-base">{selectedTask.dueDate}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">المعيار</Label>
+                    <p className="text-base">{selectedTask.criterion}</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+                    إغلاق
+                  </Button>
+                  <Button onClick={() => {
+                    setShowViewDialog(false);
+                    handleEditTask(selectedTask);
+                  }}>
+                    تعديل
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>تعديل المهمة</DialogTitle>
+            </DialogHeader>
+            {selectedTask && (
+              <div className="space-y-4">
+                <div>
+                  <Label>عنوان المهمة</Label>
+                  <Input defaultValue={selectedTask.title} />
+                </div>
+                <div>
+                  <Label>الوصف</Label>
+                  <Textarea defaultValue={selectedTask.description} />
+                </div>
+                <div>
+                  <Label>الأولوية</Label>
+                  <Select defaultValue={selectedTask.priority}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="عالية">عالية</SelectItem>
+                      <SelectItem value="متوسطة">متوسطة</SelectItem>
+                      <SelectItem value="منخفضة">منخفضة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>الحالة</Label>
+                  <Select defaultValue={selectedTask.status}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="معلقة">معلقة</SelectItem>
+                      <SelectItem value="قيد التنفيذ">قيد التنفيذ</SelectItem>
+                      <SelectItem value="مكتملة">مكتملة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>تاريخ الاستحقاق</Label>
+                  <Input type="date" defaultValue={selectedTask.dueDate} />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                    إلغاء
+                  </Button>
+                  <Button onClick={() => {
+                    toast({
+                      title: "تم الحفظ",
+                      description: "تم تحديث المهمة بنجاح"
+                    });
+                    setShowEditDialog(false);
+                  }}>
+                    حفظ التغييرات
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

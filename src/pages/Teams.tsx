@@ -6,11 +6,19 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Plus, Search, Filter, Mail, Phone, Settings, UserPlus } from 'lucide-react';
 
 const Teams = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
   const { toast } = useToast();
 
   const teams = [
@@ -138,24 +146,18 @@ const Teams = () => {
   };
 
   const handleViewTeamDetails = (team: any) => {
-    toast({
-      title: "تفاصيل الفريق",
-      description: `عرض تفاصيل ${team.name}`,
-    });
+    setSelectedTeam(team);
+    setShowViewDialog(true);
   };
 
   const handleTeamSettings = (team: any) => {
-    toast({
-      title: "إعدادات الفريق",
-      description: `إعدادات ${team.name}`,
-    });
+    setSelectedTeam(team);
+    setShowEditDialog(true);
   };
 
   const handleMemberSettings = (member: any) => {
-    toast({
-      title: "إعدادات العضو",
-      description: `إعدادات ${member.name}`,
-    });
+    setSelectedMember(member);
+    setShowEditDialog(true);
   };
 
   const handleFilter = () => {
@@ -321,6 +323,177 @@ const Teams = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* View Dialog */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>تفاصيل الفريق</DialogTitle>
+            </DialogHeader>
+            {selectedTeam && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">اسم الفريق</Label>
+                    <p className="text-lg font-semibold">{selectedTeam.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">الحالة</Label>
+                    <Badge className={getStatusColor(selectedTeam.status)}>
+                      {selectedTeam.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">قائد الفريق</Label>
+                    <p className="text-base">{selectedTeam.leader}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">عدد الأعضاء</Label>
+                    <p className="text-base">{selectedTeam.members}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">الوصف</Label>
+                  <p className="text-base mt-1">{selectedTeam.description}</p>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">المعيار المسؤول عنه</Label>
+                  <Badge variant="outline">{selectedTeam.criterion}</Badge>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">التقدم</Label>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${selectedTeam.progress}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-medium">{selectedTeam.progress}%</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+                    إغلاق
+                  </Button>
+                  <Button onClick={() => {
+                    setShowViewDialog(false);
+                    handleTeamSettings(selectedTeam);
+                  }}>
+                    تعديل
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedTeam ? 'تعديل الفريق' : 'تعديل العضو'}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedTeam && (
+              <div className="space-y-4">
+                <div>
+                  <Label>اسم الفريق</Label>
+                  <Input defaultValue={selectedTeam.name} />
+                </div>
+                <div>
+                  <Label>الوصف</Label>
+                  <Textarea defaultValue={selectedTeam.description} />
+                </div>
+                <div>
+                  <Label>قائد الفريق</Label>
+                  <Input defaultValue={selectedTeam.leader} />
+                </div>
+                <div>
+                  <Label>الحالة</Label>
+                  <Select defaultValue={selectedTeam.status}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="نشط">نشط</SelectItem>
+                      <SelectItem value="معلق">معلق</SelectItem>
+                      <SelectItem value="غير نشط">غير نشط</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                    إلغاء
+                  </Button>
+                  <Button onClick={() => {
+                    toast({
+                      title: "تم الحفظ",
+                      description: "تم تحديث الفريق بنجاح"
+                    });
+                    setShowEditDialog(false);
+                    setSelectedTeam(null);
+                  }}>
+                    حفظ التغييرات
+                  </Button>
+                </div>
+              </div>
+            )}
+            {selectedMember && (
+              <div className="space-y-4">
+                <div>
+                  <Label>اسم العضو</Label>
+                  <Input defaultValue={selectedMember.name} />
+                </div>
+                <div>
+                  <Label>الدور</Label>
+                  <Input defaultValue={selectedMember.role} />
+                </div>
+                <div>
+                  <Label>البريد الإلكتروني</Label>
+                  <Input type="email" defaultValue={selectedMember.email} />
+                </div>
+                <div>
+                  <Label>الهاتف</Label>
+                  <Input defaultValue={selectedMember.phone} />
+                </div>
+                <div>
+                  <Label>الحالة</Label>
+                  <Select defaultValue={selectedMember.status}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="نشط">نشط</SelectItem>
+                      <SelectItem value="معلق">معلق</SelectItem>
+                      <SelectItem value="غير نشط">غير نشط</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                    إلغاء
+                  </Button>
+                  <Button onClick={() => {
+                    toast({
+                      title: "تم الحفظ",
+                      description: "تم تحديث العضو بنجاح"
+                    });
+                    setShowEditDialog(false);
+                    setSelectedMember(null);
+                  }}>
+                    حفظ التغييرات
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
