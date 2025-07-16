@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { Users, Plus, Search, Filter, Mail, Phone, Settings, UserPlus } from 'lucide-react';
 
 const Teams = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
 
   const teams = [
     {
@@ -121,6 +123,48 @@ const Teams = () => {
     return names.map(n => n[0]).join('').toUpperCase();
   };
 
+  const handleCreateTeam = () => {
+    toast({
+      title: "إنشاء فريق جديد",
+      description: "تم فتح نموذج إنشاء الفريق الجديد",
+    });
+  };
+
+  const handleAddMember = () => {
+    toast({
+      title: "إضافة عضو جديد",
+      description: "تم فتح نموذج إضافة عضو للفرق",
+    });
+  };
+
+  const handleViewTeamDetails = (team: any) => {
+    toast({
+      title: "تفاصيل الفريق",
+      description: `عرض تفاصيل ${team.name}`,
+    });
+  };
+
+  const handleTeamSettings = (team: any) => {
+    toast({
+      title: "إعدادات الفريق",
+      description: `إعدادات ${team.name}`,
+    });
+  };
+
+  const handleMemberSettings = (member: any) => {
+    toast({
+      title: "إعدادات العضو",
+      description: `إعدادات ${member.name}`,
+    });
+  };
+
+  const handleFilter = () => {
+    toast({
+      title: "تصفية الفرق",
+      description: "تم فتح خيارات التصفية المتقدمة",
+    });
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -131,11 +175,11 @@ const Teams = () => {
             <p className="text-gray-600">إدارة فرق العمل والمسؤوليات حسب المعايير</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleAddMember}>
               <UserPlus className="w-4 h-4 mr-2" />
               إضافة عضو
             </Button>
-            <Button>
+            <Button onClick={handleCreateTeam}>
               <Plus className="w-4 h-4 mr-2" />
               إنشاء فريق جديد
             </Button>
@@ -153,7 +197,7 @@ const Teams = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleFilter}>
             <Filter className="w-4 h-4 mr-2" />
             فلترة
           </Button>
@@ -213,10 +257,10 @@ const Teams = () => {
                       <div className="flex justify-between items-center">
                         <Badge variant="outline">{team.criterion}</Badge>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => handleTeamSettings(team)}>
                             <Settings className="w-4 h-4" />
                           </Button>
-                          <Button size="sm">
+                          <Button size="sm" onClick={() => handleViewTeamDetails(team)}>
                             عرض التفاصيل
                           </Button>
                         </div>
@@ -265,7 +309,7 @@ const Teams = () => {
                           <Badge className={getStatusColor(member.status)}>
                             {member.status}
                           </Badge>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => handleMemberSettings(member)}>
                             <Settings className="w-4 h-4" />
                           </Button>
                         </div>

@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { Download, FileText, BarChart3, PieChart, TrendingUp, Calendar, Filter, Search } from 'lucide-react';
 
 const Reports = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('');
+  const { toast } = useToast();
 
   const reports = [
     {
@@ -104,6 +106,49 @@ const Reports = () => {
     }
   };
 
+  const handleCreateReport = () => {
+    toast({
+      title: "إنشاء تقرير جديد",
+      description: "تم فتح معالج إنشاء التقرير الجديد",
+    });
+  };
+
+  const handlePreviewReport = (report: any) => {
+    toast({
+      title: "معاينة التقرير",
+      description: `معاينة ${report.title}`,
+    });
+  };
+
+  const handleDownloadReport = (report: any) => {
+    if (report.status !== 'جاهز') {
+      toast({
+        title: "التقرير غير جاهز",
+        description: "لا يمكن تحميل التقرير في الوقت الحالي",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: "تحميل التقرير",
+      description: `تم بدء تحميل ${report.title}`,
+    });
+  };
+
+  const handleExportData = (option: any, format: string) => {
+    toast({
+      title: "تصدير البيانات",
+      description: `تصدير ${option.title} بصيغة ${format}`,
+    });
+  };
+
+  const handleFilter = () => {
+    toast({
+      title: "تصفية التقارير",
+      description: "تم فتح خيارات التصفية المتقدمة",
+    });
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -113,7 +158,7 @@ const Reports = () => {
             <h1 className="text-2xl font-bold text-gray-900">التقارير والتصدير</h1>
             <p className="text-gray-600">إنشاء وتصدير التقارير التحليلية للمعايير والتقييمات</p>
           </div>
-          <Button>
+          <Button onClick={handleCreateReport}>
             <FileText className="w-4 h-4 mr-2" />
             إنشاء تقرير جديد
           </Button>
@@ -141,7 +186,7 @@ const Reports = () => {
               <SelectItem value="year">هذا العام</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleFilter}>
             <Filter className="w-4 h-4 mr-2" />
             فلترة
           </Button>
@@ -188,10 +233,10 @@ const Reports = () => {
                         <div>النوع: {report.format}</div>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handlePreviewReport(report)}>
                           معاينة
                         </Button>
-                        <Button size="sm" disabled={report.status !== 'جاهز'}>
+                        <Button size="sm" disabled={report.status !== 'جاهز'} onClick={() => handleDownloadReport(report)}>
                           <Download className="w-4 h-4 mr-1" />
                           تحميل
                         </Button>
@@ -240,7 +285,7 @@ const Reports = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <Button>
+                        <Button onClick={() => handleExportData(option, 'excel')}>
                           <Download className="w-4 h-4 mr-1" />
                           تصدير
                         </Button>

@@ -170,6 +170,27 @@ const Evidence = () => {
     }
   };
 
+  const handlePreview = (evidence: Evidence) => {
+    toast({
+      title: "معاينة الدليل",
+      description: `عرض معاينة ${evidence.name}`,
+    });
+  };
+
+  const handleDownload = (evidence: Evidence) => {
+    toast({
+      title: "تحميل الدليل",
+      description: `تم بدء تحميل ${evidence.name}`,
+    });
+  };
+
+  const handleFilter = () => {
+    toast({
+      title: "تصفية الأدلة",
+      description: "تم فتح خيارات التصفية المتقدمة",
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved': return 'bg-green-100 text-green-800';
@@ -349,7 +370,7 @@ const Evidence = () => {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" className="flex items-center space-x-2">
+              <Button variant="outline" className="flex items-center space-x-2" onClick={handleFilter}>
                 <Filter className="h-4 w-4" />
                 <span>تصفية</span>
               </Button>
@@ -415,11 +436,11 @@ const Evidence = () => {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" className="flex items-center space-x-2" onClick={() => handlePreview(evidence)}>
                       <Eye className="h-4 w-4" />
                       <span>معاينة</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" className="flex items-center space-x-2" onClick={() => handleDownload(evidence)}>
                       <Download className="h-4 w-4" />
                       <span>تحميل</span>
                     </Button>

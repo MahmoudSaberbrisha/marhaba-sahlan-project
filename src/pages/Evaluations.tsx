@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 import { 
   BarChart3, 
   Search, 
@@ -22,6 +23,7 @@ import {
 const Evaluations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
+  const { toast } = useToast();
 
   // Sample data - in real app, this would come from API
   const evaluations = [
@@ -161,6 +163,41 @@ const Evaluations = () => {
 
   const completedEvaluations = evaluations.filter(e => e.status === 'completed').length;
 
+  const handleCreateEvaluation = () => {
+    toast({
+      title: "إنشاء تقييم جديد",
+      description: "تم فتح نموذج إنشاء التقييم الجديد",
+    });
+  };
+
+  const handleViewEvaluation = (evaluation: any) => {
+    toast({
+      title: "عرض التقييم",
+      description: `عرض تفاصيل تقييم ${evaluation.criterion}`,
+    });
+  };
+
+  const handleEditEvaluation = (evaluation: any) => {
+    toast({
+      title: "تعديل التقييم",
+      description: `تعديل تقييم ${evaluation.criterion}`,
+    });
+  };
+
+  const handleFilter = () => {
+    toast({
+      title: "تصفية التقييمات",
+      description: "تم فتح خيارات التصفية المتقدمة",
+    });
+  };
+
+  const handleStatClick = (statType: string, value: number) => {
+    toast({
+      title: `إحصائية ${statType}`,
+      description: `القيمة: ${value} - انقر لعرض التفاصيل`,
+    });
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -172,7 +209,7 @@ const Evaluations = () => {
               نتائج التقييم الذاتي والخارجي والتقارير التحليلية
             </p>
           </div>
-          <Button className="flex items-center space-x-2">
+          <Button className="flex items-center space-x-2" onClick={handleCreateEvaluation}>
             <BarChart3 className="h-4 w-4" />
             <span>إنشاء تقييم جديد</span>
           </Button>
@@ -180,7 +217,7 @@ const Evaluations = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleStatClick('متوسط الأداء', averagePerformance)}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>متوسط الأداء</span>
@@ -198,7 +235,7 @@ const Evaluations = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleStatClick('التقييمات المكتملة', completedEvaluations)}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>التقييمات المكتملة</span>
@@ -246,7 +283,7 @@ const Evaluations = () => {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" className="flex items-center space-x-2">
+              <Button variant="outline" className="flex items-center space-x-2" onClick={handleFilter}>
                 <Filter className="h-4 w-4" />
                 <span>تصفية</span>
               </Button>
@@ -295,10 +332,10 @@ const Evaluations = () => {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" onClick={() => handleViewEvaluation(evaluation)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" onClick={() => handleEditEvaluation(evaluation)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                   </div>

@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { Calendar, Clock, AlertCircle, CheckCircle, Plus, Search, Filter } from 'lucide-react';
 
 const Tasks = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
 
   const tasks = [
     {
@@ -97,6 +99,48 @@ const Tasks = () => {
     }
   };
 
+  const handleAddTask = () => {
+    toast({
+      title: "إضافة مهمة جديدة",
+      description: "تم فتح نموذج إضافة المهمة الجديدة",
+    });
+  };
+
+  const handleEditTask = (task: any) => {
+    toast({
+      title: "تعديل المهمة",
+      description: `تعديل ${task.title}`,
+    });
+  };
+
+  const handleCompleteTask = (task: any) => {
+    toast({
+      title: "إكمال المهمة",
+      description: `تم إكمال ${task.title}`,
+    });
+  };
+
+  const handleFilter = () => {
+    toast({
+      title: "تصفية المهام",
+      description: "تم فتح خيارات التصفية المتقدمة",
+    });
+  };
+
+  const handleDismissAlert = (alert: any) => {
+    toast({
+      title: "تجاهل التنبيه",
+      description: `تم تجاهل ${alert.title}`,
+    });
+  };
+
+  const handleViewAlertDetails = (alert: any) => {
+    toast({
+      title: "تفاصيل التنبيه",
+      description: `عرض تفاصيل ${alert.title}`,
+    });
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -106,7 +150,7 @@ const Tasks = () => {
             <h1 className="text-2xl font-bold text-gray-900">المهام والتنبيهات</h1>
             <p className="text-gray-600">متابعة المهام والتنبيهات المرتبطة بمعايير التميز</p>
           </div>
-          <Button>
+          <Button onClick={handleAddTask}>
             <Plus className="w-4 h-4 mr-2" />
             إضافة مهمة جديدة
           </Button>
@@ -123,7 +167,7 @@ const Tasks = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleFilter}>
             <Filter className="w-4 h-4 mr-2" />
             فلترة
           </Button>
@@ -172,10 +216,10 @@ const Tasks = () => {
                       </div>
                     </div>
                     <div className="flex justify-end gap-2 mt-4">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleEditTask(task)}>
                         تعديل
                       </Button>
-                      <Button size="sm">
+                      <Button size="sm" onClick={() => handleCompleteTask(task)}>
                         <CheckCircle className="w-4 h-4 mr-1" />
                         إكمال
                       </Button>
@@ -207,16 +251,16 @@ const Tasks = () => {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm">
-                        تجاهل
-                      </Button>
-                      <Button size="sm">
-                        عرض التفاصيل
-                      </Button>
-                    </div>
-                  </CardContent>
+                   <CardContent>
+                     <div className="flex justify-end gap-2">
+                       <Button variant="outline" size="sm" onClick={() => handleDismissAlert(alert)}>
+                         تجاهل
+                       </Button>
+                       <Button size="sm" onClick={() => handleViewAlertDetails(alert)}>
+                         عرض التفاصيل
+                       </Button>
+                     </div>
+                   </CardContent>
                 </Card>
               ))}
             </div>

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -28,6 +29,7 @@ import {
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
+  const { toast } = useToast();
 
   const organizationData = {
     name: 'جمعية أبناء الخيرية',
@@ -47,6 +49,55 @@ const Settings = () => {
     { id: 5, name: 'مقيم خارجي', permissions: ['تقييم المعايير', 'كتابة التقارير'], color: 'bg-purple-100 text-purple-800' }
   ];
 
+  const handleSaveChanges = () => {
+    toast({
+      title: "حفظ التغييرات",
+      description: "تم حفظ جميع التغييرات بنجاح",
+    });
+  };
+
+  const handleChangePassword = () => {
+    toast({
+      title: "تغيير كلمة المرور",
+      description: "تم تغيير كلمة المرور بنجاح",
+    });
+  };
+
+  const handleChangePhoto = () => {
+    toast({
+      title: "تغيير الصورة",
+      description: "تم فتح نافذة اختيار الصورة",
+    });
+  };
+
+  const handleEditRole = (role: any) => {
+    toast({
+      title: "تعديل الدور",
+      description: `تعديل دور ${role.name}`,
+    });
+  };
+
+  const handleAddRole = () => {
+    toast({
+      title: "إضافة دور جديد",
+      description: "تم فتح نموذج إضافة دور جديد",
+    });
+  };
+
+  const handleExportData = () => {
+    toast({
+      title: "تصدير البيانات",
+      description: "تم بدء عملية تصدير البيانات",
+    });
+  };
+
+  const handleImportData = () => {
+    toast({
+      title: "استيراد البيانات",
+      description: "تم فتح نافذة استيراد البيانات",
+    });
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -56,7 +107,7 @@ const Settings = () => {
             <h1 className="text-2xl font-bold text-gray-900">الإعدادات</h1>
             <p className="text-gray-600">إدارة إعدادات النظام والصلاحيات</p>
           </div>
-          <Button>
+          <Button onClick={handleSaveChanges}>
             <Save className="w-4 h-4 mr-2" />
             حفظ التغييرات
           </Button>
@@ -88,7 +139,7 @@ const Settings = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleChangePhoto}>
                       تغيير الصورة
                     </Button>
                     <p className="text-sm text-gray-500 mt-1">PNG, JPG حتى 2MB</p>
@@ -162,7 +213,7 @@ const Settings = () => {
                   <Label>تأكيد كلمة المرور</Label>
                   <Input type="password" />
                 </div>
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleChangePassword}>
                   <Key className="w-4 h-4 mr-2" />
                   تغيير كلمة المرور
                 </Button>
@@ -239,13 +290,13 @@ const Settings = () => {
                           ))}
                         </div>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleEditRole(role)}>
                         تعديل
                       </Button>
                     </div>
                   ))}
                 </div>
-                <Button className="mt-4">
+                <Button className="mt-4" onClick={handleAddRole}>
                   <Shield className="w-4 h-4 mr-2" />
                   إضافة دور جديد
                 </Button>
@@ -360,11 +411,11 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-2">
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={handleExportData}>
                     <Database className="w-4 h-4 mr-2" />
                     تصدير البيانات
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={handleImportData}>
                     <Database className="w-4 h-4 mr-2" />
                     استيراد البيانات
                   </Button>

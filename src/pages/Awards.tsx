@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Award, 
   Search, 
@@ -22,6 +23,7 @@ import {
 const Awards = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
+  const { toast } = useToast();
 
   // Sample data - in real app, this would come from API
   const awards = [
@@ -154,6 +156,55 @@ const Awards = () => {
   const activeAwards = awards.filter(a => a.status === 'in-progress' || a.status === 'planning').length;
   const completedAwards = awards.filter(a => a.status === 'completed').length;
 
+  const handleApplyNewAward = () => {
+    toast({
+      title: "التقدم لجائزة جديدة",
+      description: "تم فتح نموذج التقدم لجائزة جديدة",
+    });
+  };
+
+  const handleManageProgress = (award: any) => {
+    toast({
+      title: "إدارة التقدم",
+      description: `إدارة تقدم ${award.name}`,
+    });
+  };
+
+  const handleViewDocuments = (award: any) => {
+    toast({
+      title: "الوثائق المطلوبة",
+      description: `عرض وثائق ${award.name}`,
+    });
+  };
+
+  const handleSchedule = (award: any) => {
+    toast({
+      title: "الجدولة",
+      description: `جدولة مهام ${award.name}`,
+    });
+  };
+
+  const handleTeam = (award: any) => {
+    toast({
+      title: "إدارة الفريق",
+      description: `إدارة فريق ${award.name}`,
+    });
+  };
+
+  const handleFilter = () => {
+    toast({
+      title: "تصفية الجوائز",
+      description: "تم فتح خيارات التصفية المتقدمة",
+    });
+  };
+
+  const handleStatClick = (statType: string, value: number) => {
+    toast({
+      title: `إحصائية ${statType}`,
+      description: `القيمة: ${value} - انقر لعرض التفاصيل`,
+    });
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -165,7 +216,7 @@ const Awards = () => {
               إدارة التقديم على الجوائز ومتابعة حالة المشاركة
             </p>
           </div>
-          <Button className="flex items-center space-x-2">
+          <Button className="flex items-center space-x-2" onClick={handleApplyNewAward}>
             <Award className="h-4 w-4" />
             <span>التقدم لجائزة جديدة</span>
           </Button>
@@ -173,7 +224,7 @@ const Awards = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleStatClick('إجمالي الجوائز', totalAwards)}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>إجمالي الجوائز</span>
@@ -238,7 +289,7 @@ const Awards = () => {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" className="flex items-center space-x-2">
+              <Button variant="outline" className="flex items-center space-x-2" onClick={handleFilter}>
                 <Filter className="h-4 w-4" />
                 <span>تصفية</span>
               </Button>
@@ -358,19 +409,19 @@ const Awards = () => {
 
                   {/* Actions */}
                   <div className="flex items-center justify-end space-x-2 pt-4 border-t">
-                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" className="flex items-center space-x-2" onClick={() => handleSchedule(award)}>
                       <Calendar className="h-4 w-4" />
                       <span>الجدولة</span>
                     </Button>
-                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" className="flex items-center space-x-2" onClick={() => handleViewDocuments(award)}>
                       <FileText className="h-4 w-4" />
                       <span>الوثائق</span>
                     </Button>
-                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" className="flex items-center space-x-2" onClick={() => handleTeam(award)}>
                       <Users className="h-4 w-4" />
                       <span>الفريق</span>
                     </Button>
-                    <Button size="sm" className="flex items-center space-x-2">
+                    <Button size="sm" className="flex items-center space-x-2" onClick={() => handleManageProgress(award)}>
                       <Target className="h-4 w-4" />
                       <span>إدارة التقدم</span>
                     </Button>
