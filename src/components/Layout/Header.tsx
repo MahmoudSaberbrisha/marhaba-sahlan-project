@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Search, Settings, User, Users } from 'lucide-react';
+import { Bell, Search, Settings, User, Users, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -8,9 +8,23 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Header = () => {
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "تم تسجيل الخروج",
+      description: "شكراً لاستخدام منصة التميز",
+    });
+  };
+
   return (
     <header className="bg-primary border-b border-primary px-6 py-4">
       <div className="flex items-center justify-between">
@@ -24,7 +38,7 @@ const Header = () => {
               منصة التميز للعمل الخيري
             </div>
             <div className="text-sm text-primary-foreground/80">
-              جمعية أبناء
+              {user?.organization || 'جمعية أبناء'}
             </div>
           </div>
         </div>
@@ -81,13 +95,25 @@ const Header = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2 text-primary-foreground hover:bg-primary/80">
                 <User className="h-5 w-5" />
-                <span>أحمد محمد</span>
+                <span>{user?.name || 'المستخدم'}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <div className="flex flex-col">
+                  <span className="font-medium">{user?.name}</span>
+                  <span className="text-xs text-gray-500">{user?.email}</span>
+                  <span className="text-xs text-gray-500">{user?.role}</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem>الملف الشخصي</DropdownMenuItem>
               <DropdownMenuItem>الإعدادات</DropdownMenuItem>
-              <DropdownMenuItem>تسجيل الخروج</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <LogOut className="h-4 w-4 mr-2" />
+                تسجيل الخروج
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
